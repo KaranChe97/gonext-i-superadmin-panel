@@ -62,27 +62,31 @@ class Category extends Component{
         if(!this.state.editValue) {
            return alert('Enter value');
         }
-        axios.patch(ApiUrl.categories, {
-            category_id: this.state.editable,
-            category_name: this.state.editValue
+        const params = { tagId: this.state.editable };
+        const urlParams = new URLSearchParams(params);
+        axios.patch(`${ApiUrl.categories}?${urlParams}`, {
+            name: this.state.editValue
         })
         .then(res => {
             if(res && res.data && res.data.status === 1) {
                 this.setState({
                     editable: '',
-                    editValue: ''
+                    editValue: '',
+                    categories: res.data.data
                 },this.getCategories)
             }
         })
     }
 
-    deleteCategory = (category_id) => {
-        const params = { category_id };
+    deleteCategory = (tagId) => {
+        const params = { tagId };
         const urlParams = new URLSearchParams(params);
         axios.delete(`${ApiUrl.categories}?${urlParams}`)
         .then((res) => {
             if(res && res.data && res.data.status === 1) {
-                this.getCategories();
+                this.setState({
+                    categories: res.data.data
+                })
             }
         })
     }
@@ -102,20 +106,6 @@ class Category extends Component{
         })
     }
 
-    getSubCategories = async (category_id) => {
-        const params = { category_id };
-        const urlParams = new URLSearchParams(params);
-
-        axios.get(`${ApiUrl.getSubCategories}?${urlParams}`)
-        .then(function(response){
-            // this.setState({
-                
-            // })
-        })
-        .catch(function(err){ 
-            console.log(err)
-        })
-    }
 
     addNewCategory = async() => {
         if(!this.state.newCategory) {
@@ -126,12 +116,17 @@ class Category extends Component{
             if(res && res.data) {
                 if(res.data.status === 1) {
                     this.setState({
-                        newCategory: ''
-                    }, this.getCategories)
+                        newCategory: '',
+                        categories: res.data.data
+                    })
+                } else if(res.data.message) {
+                    alert(res.data.message);
                 }
             }
         })
-        .catch(err => console.log(err));
+        .catch(err => { 
+            console.log(err);
+         });
     }
 
     render(){
@@ -157,9 +152,13 @@ class Category extends Component{
                 </InputGroup>
                 </ListGroupItem>
             </ListGroup>
+            </Col>
+            </Row>
+            <Row>
+                <Col>
                 <Card small className="mb-4">
                 <CardHeader className="border-bottom">
-                    <h6 className="m-0">Main Categories</h6>
+                    <h6 className="m-0">Tag Categories</h6>
                 </CardHeader>
                 <CardBody className="p-0 pb-3">
                     <table className="table mb-0">
@@ -171,19 +170,13 @@ class Category extends Component{
                         <th scope="col" className="border-0">
                             Name
                         </th>
-                            <th scope="col" className="border-0">
-                                slug
-                            </th>
                        
                         <th scope="col" className="border-0">
                             Edit
                         </th>
                         <th scope="col" className="border-0">
                             Delete
-                        </th>
-                        <th scope="col" className="border-0">
-                            Open
-                        </th>
+                        </th>                     
                         </tr>
                     </thead>
                     <tbody>
@@ -191,17 +184,12 @@ class Category extends Component{
                             categories.map((d,i) => d._id !== editable ? <tr key={d._id}> 
                                 <td> {i+1} </td>
                                 <td> {d.name} </td>
-                                <td> {d.slug} </td>
                                 <td> <Button onClick={() => this.editItem(d._id, d.name)}> Edit </Button> </td>
                                 <td> <Button theme="danger" onClick={() => this.deleteCategory(d._id)}> Delete </Button> </td>
-                                <td> 
-                                    <NavLink to={`category/${d._id}/${d.name}`} >  Open </NavLink>
-                                </td>
                              </tr>
                              : <tr key={d._id}> 
                                 <td> {i+1} </td>
                                 <td> <input value={editValue} style={{ width: '100%' }} placeholder="Edit category name" onChange={this.handleChangeEdit} /> </td>
-                                <td> {d.slug} </td>
                                 <td> <Button theme="info" onClick={this.saveEdit}> Save </Button> </td>
                                 <td> <Button onClick={this.cancelEdit}> Cancel </Button> </td>
                              </tr>

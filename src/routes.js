@@ -15,27 +15,18 @@ import BlogPosts from "./views/BlogPosts";
 
 import Category from "./views/Category";
 
-import CategoryDetail from './views/CategoryDetails';
-
-
 export default [
   {
     path: "/",
     exact: true,
     layout: DefaultLayout,
-    component: () => <Redirect to="/blog-overview" />
+    component: () => <Redirect to="/category" />
   },
   {
     path: "/category",
     exact: true,
     layout: DefaultLayout,
     component: Category
-  },
-  {
-    path: "/category/:category_id/:category_name",
-    exact: true,
-    layout: DefaultLayout,
-    component: CategoryDetail
   },
   {
     path: "/blog-overview",
